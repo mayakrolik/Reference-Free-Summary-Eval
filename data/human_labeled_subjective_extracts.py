@@ -3,14 +3,15 @@ from subjective_extracts import extract_subjective
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
-test = pd.read_csv("cnn_dailymail/test.csv")
-train = pd.read_csv("cnn_dailymail/train.csv")
+dailymail_df = pd.read_csv("labeled_data/dailymail_summaries.csv")
+reddit_df = pd.read_csv("labeled_data/reddit_summaries.csv")
 
 # Extract subjective values for test, train, and validation sets
 def extract_row(row):
     text = row['article']
     summary = row['highlights']
     id = row['id']
+    # Add in human labeled scores
     subjective_scores = extract_subjective(text, summary)
     data = {'id': id, 'text': text, 'summary': summary}
     data.update(subjective_scores)
@@ -26,9 +27,8 @@ def extract_for_dataset(dataset, num_workers=3):
             subjective_data.append(f.result())
     return pd.DataFrame(subjective_data)
 
-# Extract and save subjective scores for test and train datasets
-test_subjective = extract_for_dataset(test)
-test_subjective.to_csv("labeled_data/cnn_dailymail_test_labeled.csv", index=False)
+dailymail_subjective = extract_for_dataset(dailymail_df)
+dailymail_subjective.to_csv("labeled_data/dailymail_labeled.csv", index=False)
 
-train_subjective = extract_for_dataset(train[:5000]) # Just do 5000 since is large dataset
-train_subjective.to_csv("labeled_data/cnn_dailymail_train_labeled.csv", index=False)
+reddit_subjective = extract_for_dataset(reddit_df)
+reddit_subjective.to_csv("labeled_data/reddit_labeled.csv", index=False)
