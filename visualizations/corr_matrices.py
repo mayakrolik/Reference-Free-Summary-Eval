@@ -10,4 +10,6 @@ def generate_correlation_heatmap(df, title='Correlation Heatmap'):
                 square=True, fmt='.2f', cbar_kws={'label': 'Correlation'})
     plt.title('Pairwise Correlation Heatmap')
     plt.tight_layout()
-    plt.show()
+    
+    # Save high-res
+    plt.savefig(f'visualizations/images/corr_matrices/{title}_heatmap.png', dpi=300, bbox_inches='tight')

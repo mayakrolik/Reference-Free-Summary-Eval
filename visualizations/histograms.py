@@ -10,6 +10,6 @@ def generate_histogram(df, column, title='Histogram', xlabel='Value', ylabel='Fr
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(axis='y', alpha=0.75)
-    
+
     # Save high-res
-    plt.savefig(f'visualizations/images/{title}_histogram.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'visualizations/images/histograms/{title}_histogram.png', dpi=300, bbox_inches='tight')

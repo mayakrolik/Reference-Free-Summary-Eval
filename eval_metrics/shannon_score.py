@@ -3,33 +3,19 @@ from nltk import sent_tokenize, word_tokenize
 from nltk.lm import MLE, Vocabulary
 from nltk.lm.preprocessing import padded_everygram_pipeline
 from tqdm import tqdm
-from nltk.lm.models import KneserNeyInterpolated
 
 nltk.download('punkt', quiet=True)
 nltk.download('perluniprops', quiet=True)
 nltk.download('universal_tagset', quiet=True)
 
-def train_ngram_model(sentences, n=1):
-    tokenized_sents = [word_tokenize(sent.lower()) for sent in sentences if sent.strip()]
-    if not tokenized_sents or all(len(tokens) == 0 for tokens in tokenized_sents):
-        # Fallback: create minimal vocab for tiny/empty data
-        tokenized_sents = [['<unk>', 'the']] * 2
-    
+def train_ngram_model(sentences, n=4):
+    tokenized_sents = [word_tokenize(sent.lower()) for sent in sentences]
     train_data, padded_sents = padded_everygram_pipeline(n, tokenized_sents)
-    
-    # Ensure non-zero counts
     all_tokens = [token for sent in tokenized_sents for token in sent]
-    if sum(1 for token in all_tokens) == 0:
-        all_tokens = ['<unk>', 'the', 'is']
-    
     vocab = Vocabulary(all_tokens, unk_label='<unk>')
+    from nltk.lm import KneserNeyInterpolated
     lm = KneserNeyInterpolated(n)
     lm.fit(train_data, vocab)
-    
-    # Debug: check counts
-    print(f"Vocab size: {len(lm.vocab)}, Unigram N(): {lm.counts.unigrams().N()}")
-    assert lm.counts.unigrams().N() > 0, "Still zero counts after fix"
-    
     return lm
 
 def compute_ngram_surprisal(lm, text_or_list, context_sentences=None):
@@ -54,7 +40,9 @@ def compute_ngram_surprisal(lm, text_or_list, context_sentences=None):
                 context_ngram = tuple(['<unk>'] * (lm.order - 1 - len(context_ngram))) + context_ngram
             
             logprob = lm.logscore(word, context_ngram)
-            total_surprisal -= logprob
+            surprisal = -logprob  # Explicitly positive
+            total_surprisal += max(0, surprisal)  # Clamp individual surprisals
+
     
     return total_surprisal
 
@@ -79,7 +67,7 @@ def shannon_score_ngram(document_text, summary_text, n=4):
     else:
         I_D_given_D = 0.0
     
-    numerator = I_D - I_D_given_S
+    numerator = max(0, I_D - I_D_given_S)  # Clamp numerator
     denominator = I_D - I_D_given_D
     score = numerator / denominator if denominator > 0 else 0.0
     return score
@@ -89,7 +77,7 @@ def compute_shannon_score_wrapper(df, verbose=False):
     for i, row in tqdm(df.iterrows()):
         original_text = row["text"]
         highlight_text = row["summary"]
-        shannon = shannon_score_ngram(original_text, highlight_text, n=1)
+        shannon = shannon_score_ngram(original_text, highlight_text, n=2)
         if shannon > 0:
             print(shannon)
         if verbose:
