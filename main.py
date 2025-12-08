@@ -127,26 +127,34 @@ if __name__ == "__main__":
     # for col in ['overall_score', 'information_similarity', 'grammatical_correctness', 'conciseness', 'cohesion', 'embedding_similarity',
     #             'flesch_score', 'grammar_score', 'perplexity', 'sdc_unigram', 'shannon_score', 'supert_score', 'BERT F1', 'ROUGE-1 F1', 'ROUGE-2 F1', 'ROUGE-L F1']:
     #     histograms.generate_histogram(non_human_labeled_processed, column=col, title=f'Non-Human Labeled (Normalized): {col.replace("_", " ").title()}', xlabel=col.replace("_", " ").title(), ylabel='Frequency')
-    # for col in ['overall_score_llm', 'information_similarity_llm', 'grammatical_correctness_llm', 'conciseness_llm', 'cohesion', 
+    # for col in ['overall_score_llm', 'information_similarity_llm', 'grammatical_correctness_llm', 'conciseness_llm', 'cohesion_llm', 
     #             'accuracy_human', 'coverage_human', 'coherence_human', 'overall_score_human', 'embedding_similarity', 'flesch_score', 
     #             'grammar_score', 'perplexity', 'sdc_unigram', 'shannon_score', 'supert_score', 'BERT F1', 'ROUGE-1 F1', 'ROUGE-2 F1', 'ROUGE-L F1']:
     #     histograms.generate_histogram(dailymail_processed, column=col, title=f'Non-Human Labeled (Normalized): {col.replace("_", " ").title()}', xlabel=col.replace("_", " ").title(), ylabel='Frequency')
     #     histograms.generate_histogram(reddit_processed, column=col, title=f'Non-Human Labeled (Normalized): {col.replace("_", " ").title()}', xlabel=col.replace("_", " ").title(), ylabel='Frequency')
                 
-    # Compute correlations and generate plots as needed, ensure only numeric columns are used
-    non_human_numeric = non_human_labeled_processed.select_dtypes(include=[np.number])
-    dailymail_numeric = dailymail_processed.select_dtypes(include=[np.number])
-    reddit_numeric = reddit_processed.select_dtypes(include=[np.number])
+    # # Compute correlations and generate plots as needed, ensure only numeric columns are used
+    # non_human_numeric = non_human_labeled_processed.select_dtypes(include=[np.number])
+    # dailymail_numeric = dailymail_processed.select_dtypes(include=[np.number])
+    # reddit_numeric = reddit_processed.select_dtypes(include=[np.number])
 
-    corr_matrices.generate_correlation_heatmap(non_human_numeric, title='Non-Human Labeled Data Correlation Heatmap')
-    corr_matrices.generate_correlation_heatmap(dailymail_numeric, title='Dailymail Data Correlation Heatmap')
-    corr_matrices.generate_correlation_heatmap(reddit_numeric, title='Reddit Data Correlation Heatmap')
+    # corr_matrices.generate_correlation_heatmap(non_human_numeric, title='Non-Human Labeled Data Correlation Heatmap')
+    # corr_matrices.generate_correlation_heatmap(dailymail_numeric, title='Dailymail Data Correlation Heatmap')
+    # corr_matrices.generate_correlation_heatmap(reddit_numeric, title='Reddit Data Correlation Heatmap')
 
-    non_human_labeled_processed_normalized_numeric = non_human_labeled_processed_normalized.select_dtypes(include=[np.number])
-    dailymail_processed_normalized_numeric = dailymail_processed_normalized.select_dtypes(include=[np.number])
-    reddit_processed_normalized_numeric = reddit_processed_normalized.select_dtypes(include=[np.number])
+    # non_human_labeled_processed_normalized_numeric = non_human_labeled_processed_normalized.select_dtypes(include=[np.number])
+    # dailymail_processed_normalized_numeric = dailymail_processed_normalized.select_dtypes(include=[np.number])
+    # reddit_processed_normalized_numeric = reddit_processed_normalized.select_dtypes(include=[np.number])
 
-    corr_matrices.generate_correlation_heatmap(non_human_labeled_processed_normalized_numeric, title='Non-Human Labeled Data Correlation Heatmap (Normalized)')
-    corr_matrices.generate_correlation_heatmap(dailymail_processed_normalized_numeric, title='Dailymail Data Correlation Heatmap (Normalized)')
-    corr_matrices.generate_correlation_heatmap(reddit_processed_normalized_numeric, title='Reddit Data Correlation Heatmap (Normalized)')
+    # corr_matrices.generate_correlation_heatmap(non_human_labeled_processed_normalized_numeric, title='Non-Human Labeled Data Correlation Heatmap (Normalized)')
+    # corr_matrices.generate_correlation_heatmap(dailymail_processed_normalized_numeric, title='Dailymail Data Correlation Heatmap (Normalized)')
+    # corr_matrices.generate_correlation_heatmap(reddit_processed_normalized_numeric, title='Reddit Data Correlation Heatmap (Normalized)')
+
+    concatenated_df = pd.concat([dailymail_processed_normalized, reddit_processed_normalized], ignore_index=True)
+    concatenated_numeric = concatenated_df.select_dtypes(include=[np.number])
+    # corr_matrices.generate_correlation_heatmap(concatenated_numeric, title='Concatenated Data Correlation Heatmap, All Metrics')
+
+    concatenated_numeric.rename(columns={'cohesion': 'cohesion_llm'}, inplace=True)
+    specific_metrics = concatenated_numeric[['embedding_similarity', 'flesch_score', 'grammar_score', 'perplexity', 'sdc_unigram', 'shannon_score', 'supert_score', 'BERT F1', 'ROUGE-1 F1', 'ROUGE-2 F1', 'ROUGE-L F1']]
+    corr_matrices.generate_correlation_heatmap(specific_metrics, title='Concatenated Data Correlation Heatmap, Specific Metrics 6')
 
