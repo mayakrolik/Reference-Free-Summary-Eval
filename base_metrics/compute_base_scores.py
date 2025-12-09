@@ -3,11 +3,9 @@ from .compute_bert_scores import compute_bert_score
 from .rouge_scores import compute_rouge_scores
 from tqdm import tqdm
 
-# cnn_test_df = pd.read_csv("../data/cnn_dailymail/test.csv")
-# reddit_df = pd.read_csv("../data/labeled_data/reddit_summaries.csv")
-# dailymail_df = pd.read_csv("../data/labeled_data/dailymail_summaries.csv")
 
 def compute_base_scores(candidate, reference):
+    """Computes all base scores for a text summary pair."""
     bert_scores = compute_bert_score(candidate, reference)
     rouge_scores = compute_rouge_scores(candidate, reference)
     return {
@@ -17,37 +15,9 @@ def compute_base_scores(candidate, reference):
         **rouge_scores
     }
 
-# # Apply to CNN/DailyMail test set
-# cnn_test_scores = []
-# for _, row in tqdm(cnn_test_df.iterrows()):
-#     scores = compute_base_scores(row['highlights'], row['article'])
-#     scores['id'] = row['id']
-#     cnn_test_scores.append(scores)
-
-# cnn_test_scores_df = pd.DataFrame(cnn_test_scores)
-# cnn_test_scores_df.to_csv("../data/labeled_data/cnn_dailymail_test_base_scores.csv", index=False)  
-
-# # Apply to Reddit dataset
-# reddit_scores = []
-# for _, row in tqdm(reddit_df.iterrows()): 
-#     scores = compute_base_scores(row['highlights'], row['article'])
-#     scores['id'] = row['id']
-#     reddit_scores.append(scores)
-
-# reddit_scores_df = pd.DataFrame(reddit_scores)
-# reddit_scores_df.to_csv("../data/labeled_data/reddit_base_scores.csv", index=False)
-
-# # Apply to DailyMail dataset
-# dailymail_scores = []
-# for _, row in tqdm(dailymail_df.iterrows()): 
-#     scores = compute_base_scores(row['highlights'], row['article'])
-#     scores['id'] = row['id']
-#     dailymail_scores.append(scores)
-
-# dailymail_scores_df = pd.DataFrame(dailymail_scores)
-# dailymail_scores_df.to_csv("../data/labeled_data/dailymail_base_scores.csv", index=False)
-
 def compute_base_scores_wrapper(df, verbose=False):
+    """Computes all base scores for a dataframe containing text summary pairs."""
+    # Initialize to zeroes, should these be None?
     df["BERT Precision"] = 0.0
     df["BERT Recall"] = 0.0
     df["BERT F1"] = 0.0
@@ -61,6 +31,7 @@ def compute_base_scores_wrapper(df, verbose=False):
     df["ROUGE-L Recall"] = 0.0
     df["ROUGE-L Precision"] = 0.0
 
+    # Iterate through all rows
     for i, row in tqdm(df.iterrows()):
         original_text = row["text"]
         highlight_text = row["summary"]
